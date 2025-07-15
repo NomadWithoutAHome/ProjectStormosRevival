@@ -10,6 +10,7 @@ import os
 import json
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
+from .game_routes import router as game_router
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key='your-secret-key')
@@ -155,4 +156,6 @@ async def websocket_chat(websocket: WebSocket):
             for connection in chat_connections:
                 await connection.send_text(formatted)
     except WebSocketDisconnect:
-        chat_connections.remove(websocket) 
+        chat_connections.remove(websocket)
+
+app.include_router(game_router) 
