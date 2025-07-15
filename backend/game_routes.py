@@ -5,6 +5,8 @@ from .database import SessionLocal
 from . import auth
 import random
 from urllib.parse import parse_qs
+import hashlib
+from . import models
 
 router = APIRouter()
 
@@ -46,4 +48,24 @@ def game_login_hack(params: str, db: Session = Depends(get_db)):
 
 @router.get('/game/orders')
 def game_orders(uin: str = Query(...)):
-    return PlainTextResponse('completed') 
+    return PlainTextResponse('completed')
+
+@router.get('/game/sendscores')
+def game_sendscores(uid: int = Query(...), lname: str = Query(...), score: float = Query(...), hash: str = Query(...), lv: float = Query(...), gv: float = Query(...), db: Session = Depends(get_db)):
+    # Secret key for hash validation (should match your game)
+    secret_key = 'your_secret_key_here'  # TODO: set this securely
+    expected_hash = hashlib.md5(f"{uid}{score}{secret_key}".encode()).hexdigest()
+    if hash != expected_hash:
+        return PlainTextResponse('There was an error posting the high score: invalid hash')
+    # Store the score
+    new_score = models.LeaderboardScore(
+        uid=uid,
+        level_name=lname,
+        score=score,
+        hash=hash,
+        level_version=lv,
+        game_version=gv
+    )
+    db.add(new_score)
+    db.commit()
+    return PlainTextResponse('Score uploaded successfully') 

@@ -11,6 +11,7 @@ import json
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from .game_routes import router as game_router
+from sqlalchemy import func
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key='your-secret-key')
@@ -157,5 +158,36 @@ async def websocket_chat(websocket: WebSocket):
                 await connection.send_text(formatted)
     except WebSocketDisconnect:
         chat_connections.remove(websocket)
+
+@app.get('/leaderboard', response_class=HTMLResponse)
+def leaderboard(request: Request, db: Session = Depends(get_db)):
+    # Get all level names
+    levels = db.query(models.LeaderboardScore.level_name).distinct().all()
+    level_names = [l[0] for l in levels]
+    # Get level from query param, default to first level
+    level = request.query_params.get('level', level_names[0] if level_names else None)
+    if not level:
+        return templates.TemplateResponse('leaderboard.html', {"request": request, "scores": [], "level_names": [], "current_level": None})
+    # Subquery: get max score per uid for this level
+    subq = db.query(
+        models.LeaderboardScore.uid,
+        func.max(models.LeaderboardScore.score).label('max_score')
+    ).filter(models.LeaderboardScore.level_name == level).group_by(models.LeaderboardScore.uid).subquery()
+    # Join to get full row (including date) and user
+    results = db.query(models.LeaderboardScore, models.User).join(
+        subq,
+        (models.LeaderboardScore.uid == subq.c.uid) & (models.LeaderboardScore.score == subq.c.max_score)
+    ).outerjoin(models.User, models.LeaderboardScore.uid == models.User.id)
+    results = results.filter(models.LeaderboardScore.level_name == level).order_by(models.LeaderboardScore.score.desc()).all()
+    # Format for template
+    formatted = []
+    for r, user in results:
+        formatted.append({
+            'username': user.username if user else r.uid,
+            'score': r.score,
+            'level_name': r.level_name,
+            'date': r.created_at.strftime('%m/%d/%Y %I:%M%p')
+        })
+    return templates.TemplateResponse('leaderboard.html', {"request": request, "scores": formatted, "level_names": level_names, "current_level": level})
 
 app.include_router(game_router) 

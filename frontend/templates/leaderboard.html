@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="/" class="underline">Home</a>
+    <a href="/forum" class="underline ml-4">Forum</a>
+    <a href="/chat" class="underline ml-4">Chat</a>
+</div>
+<h2 class="text-xl mb-4">Leaderboard</h2>
+<form method="get" class="mb-4">
+    <label for="level" class="mr-2">Level:</label>
+    <select name="level" id="level" class="bg-black border border-green-400 text-green-400 p-2" onchange="this.form.submit()">
+        {% for lname in level_names %}
+            <option value="{{ lname }}" {% if lname == current_level %}selected{% endif %}>{{ lname }}</option>
+        {% endfor %}
+    </select>
+</form>
+<table class="w-full text-left border-collapse">
+    <thead>
+        <tr>
+            <th class="border-b border-green-700 pb-2">Rank</th>
+            <th class="border-b border-green-700 pb-2">Username</th>
+            <th class="border-b border-green-700 pb-2">Score</th>
+            <th class="border-b border-green-700 pb-2">Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for score in scores %}
+        <tr>
+            <td class="py-1">{{ loop.index }}</td>
+            <td class="py-1">{{ score.username }}</td>
+            <td class="py-1">{{ score.score }}</td>
+            <td class="py-1">{{ score.date }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-green-700 py-2">No scores yet for this level.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 
