@@ -1,15 +1,29 @@
 {% extends 'base.html' %}
 {% block title %}Chat{% endblock %}
 {% block content %}
+<style>
+  #chat-messages::-webkit-scrollbar {
+    width: 8px;
+    background: #111;
+  }
+  #chat-messages::-webkit-scrollbar-thumb {
+    background: #22c55e;
+    border-radius: 4px;
+  }
+  #chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: #22c55e #111;
+  }
+</style>
 <div class="mb-6">
     <a href="/" class="underline">Home</a>
     <a href="/forum" class="underline ml-4">Forum</a>
     <a href="/logout" class="underline text-red-400 ml-4">Logout</a>
 </div>
 <h2 class="text-xl mb-4">Chat Room</h2>
-<div id="chat-messages" class="mb-6 max-h-96 overflow-y-auto bg-black border border-green-700 p-2" style="min-height: 200px;">
+<div id="chat-messages" class="mb-6 h-[21rem] overflow-y-scroll bg-black border border-green-700 p-2" style="min-height: 200px;">
     {% for message in messages %}
-        <div class="mb-2">{{ message|safe }}</div>
+        <div class="mb-1 py-1">{{ message|safe }}</div>
     {% endfor %}
 </div>
 {% if user %}
@@ -22,7 +36,7 @@
     const chatMessages = document.getElementById('chat-messages');
     function appendMessage(msg) {
         const div = document.createElement('div');
-        div.className = 'mb-2';
+        div.className = 'mb-1 py-1';
         div.innerHTML = msg;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
