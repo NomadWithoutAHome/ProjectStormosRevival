@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from sqlalchemy.orm import Session
 from .database import SessionLocal
 from . import auth
@@ -40,6 +40,6 @@ def game_login_hack(params: str, db: Session = Depends(get_db)):
     user = auth.authenticate_user(db, uin, pass_)
     if user:
         fake_id = random.randint(100000, 999999)
-        return JSONResponse({'user_id': fake_id})
+        return PlainTextResponse(str(fake_id))
     else:
-        return JSONResponse({'error': 'wrong username or password'}) 
+        return PlainTextResponse('wrong username or password') 
