@@ -9,7 +9,7 @@ def create_post(db: Session, user_id: int, content: str):
     return post
 
 def get_posts(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.ForumPost).order_by(models.ForumPost.created_at.desc()).offset(skip).limit(limit).all()
+    return db.query(models.ForumPost).order_by(models.ForumPost.created_at.asc()).offset(skip).limit(limit).all()
 
 def create_message(db: Session, user_id: int, content: str):
     message = models.ChatMessage(user_id=user_id, content=content)

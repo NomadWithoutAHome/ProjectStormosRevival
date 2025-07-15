@@ -8,7 +8,7 @@ from .database import SessionLocal, engine, Base
 from . import models, schemas, auth, crud
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 app = FastAPI()
@@ -61,9 +61,22 @@ def logout(request: Request):
 
 @app.get('/forum', response_class=HTMLResponse)
 def forum(request: Request, db: Session = Depends(get_db)):
+    from zoneinfo import ZoneInfo
     posts = crud.get_posts(db)
+    formatted_posts = []
+    for p in posts:
+        username = p.user.username if p.user else 'Unknown'
+        created_at = p.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        timestamp = created_at.astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
+        formatted_posts.append({
+            'username': username,
+            'content': p.content,
+            'timestamp': timestamp
+        })
     user = request.session.get('user')
-    return templates.TemplateResponse('forum.html', {"request": request, "posts": posts, "user": user})
+    return templates.TemplateResponse('forum.html', {"request": request, "posts": formatted_posts, "user": user})
 
 @app.post('/forum')
 def post_forum(request: Request, content: str = Form(...), db: Session = Depends(get_db)):
@@ -87,7 +100,10 @@ def chat(request: Request, db: Session = Depends(get_db)):
     formatted_messages = []
     for m in messages:
         username = m.user.username if m.user else 'Unknown'
-        timestamp = m.created_at.astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
+        created_at = m.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        timestamp = created_at.astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
         html = f"<span class='font-bold' title='{timestamp} EST'>{username}:</span> {m.content}"
         formatted_messages.append(html)
     user = request.session.get('user')
@@ -121,10 +137,13 @@ async def websocket_chat(websocket: WebSocket):
             user = auth.get_user_by_username(db, username)
             if user:
                 chat_msg = crud.create_message(db, user.id, content)
-                # Use Windows-compatible format (with leading zeros)
-                timestamp = chat_msg.created_at.astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
+                created_at = chat_msg.created_at
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                timestamp = created_at.astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
             else:
-                timestamp = datetime.utcnow().astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
+                now = datetime.utcnow().replace(tzinfo=timezone.utc)
+                timestamp = now.astimezone(ZoneInfo('US/Eastern')).strftime('%m/%d/%Y %I:%M%p')
             db.close()
             # Clean format: User1: Message (timestamp as title)
             formatted = f"<span class='font-bold' title='{timestamp} EST'>{username}:</span> {content}"

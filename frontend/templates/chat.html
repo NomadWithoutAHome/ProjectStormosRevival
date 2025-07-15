@@ -53,6 +53,10 @@
         }
         return false;
     }
+    // Scroll to bottom on page load
+    window.onload = function() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
 </script>
 {% else %}
 <div class="text-green-700">Login to chat.</div>
