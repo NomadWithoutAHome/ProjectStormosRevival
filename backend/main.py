@@ -62,7 +62,12 @@ def logout(request: Request):
 @app.get('/forum', response_class=HTMLResponse)
 def forum(request: Request, db: Session = Depends(get_db)):
     from zoneinfo import ZoneInfo
-    posts = crud.get_posts(db)
+    from fastapi import Query
+    page = int(request.query_params.get('page', 1))
+    per_page = 8
+    total_posts = db.query(models.ForumPost).count()
+    total_pages = (total_posts + per_page - 1) // per_page
+    posts = db.query(models.ForumPost).order_by(models.ForumPost.created_at.asc()).offset((page-1)*per_page).limit(per_page).all()
     formatted_posts = []
     for p in posts:
         username = p.user.username if p.user else 'Unknown'
@@ -76,7 +81,7 @@ def forum(request: Request, db: Session = Depends(get_db)):
             'timestamp': timestamp
         })
     user = request.session.get('user')
-    return templates.TemplateResponse('forum.html', {"request": request, "posts": formatted_posts, "user": user})
+    return templates.TemplateResponse('forum.html', {"request": request, "posts": formatted_posts, "user": user, "page": page, "total_pages": total_pages})
 
 @app.post('/forum')
 def post_forum(request: Request, content: str = Form(...), db: Session = Depends(get_db)):
