@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="/" class="underline">Home</a>
+    <a href="/forum" class="underline ml-4">Forum</a>
+    <a href="/logout" class="underline text-red-400 ml-4">Logout</a>
+</div>
+<h2 class="text-xl mb-4">Chat Room</h2>
+<div class="mb-6 max-h-96 overflow-y-auto">
+    {% for message in messages %}
+        <div class="mb-2 p-2 border-l-4 border-green-700 bg-black">
+            <span class="font-bold">{{ message.user.username if message.user else 'Unknown' }}</span>
+            <span class="text-green-700 text-xs">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            <div class="ml-2">{{ message.content }}</div>
+        </div>
+    {% else %}
+        <div class="text-green-700">No messages yet.</div>
+    {% endfor %}
+</div>
+{% if user %}
+<form action="/chat" method="post" class="mb-4">
+    <textarea name="content" class="bg-black border border-green-400 text-green-400 p-2 w-full mb-2" rows="2" required></textarea>
+    <button type="submit" class="bg-green-900 hover:bg-green-700 text-green-200 px-4 py-2">Send</button>
+</form>
+{% else %}
+<div class="text-green-700">Login to chat.</div>
+{% endif %}
+{% endblock %} 

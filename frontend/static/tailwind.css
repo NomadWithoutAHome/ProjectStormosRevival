@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: #000;
+    color: #22c55e;
+    font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+}
+
+.blink {
+    animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+
+/* Custom terminal green */
+.text-green-400 { color: #22c55e; }
+.bg-green-900 { background-color: #064e3b; }
+.bg-green-700 { background-color: #047857; }
+.border-green-400 { border-color: #22c55e; }
+.border-green-700 { border-color: #047857; }
+.text-green-700 { color: #047857; }
+.text-green-200 { color: #bbf7d0; } 

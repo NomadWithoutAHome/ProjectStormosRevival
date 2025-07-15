@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Login / Signup{% endblock %}
+{% block content %}
+<div class="mb-6">
+    {% if error %}
+        <div class="bg-red-900 text-red-300 p-2 mb-4 rounded">{{ error }}</div>
+    {% endif %}
+    {% if not user %}
+    <form action="/login" method="post" class="mb-4">
+        <div class="mb-2">
+            <label class="block mb-1">Username</label>
+            <input name="username" class="bg-black border border-green-400 text-green-400 p-2 w-full" required>
+        </div>
+        <div class="mb-2">
+            <label class="block mb-1">Password</label>
+            <input name="password" type="password" class="bg-black border border-green-400 text-green-400 p-2 w-full" required>
+        </div>
+        <button type="submit" class="bg-green-900 hover:bg-green-700 text-green-200 px-4 py-2 mt-2">Login</button>
+    </form>
+    <form action="/signup" method="post">
+        <div class="mb-2">
+            <label class="block mb-1">Username</label>
+            <input name="username" class="bg-black border border-green-400 text-green-400 p-2 w-full" required>
+        </div>
+        <div class="mb-2">
+            <label class="block mb-1">Password</label>
+            <input name="password" type="password" class="bg-black border border-green-400 text-green-400 p-2 w-full" required>
+        </div>
+        <button type="submit" class="bg-green-900 hover:bg-green-700 text-green-200 px-4 py-2 mt-2">Sign Up</button>
+    </form>
+    {% else %}
+    <div class="mb-4">Welcome, <span class="font-bold">{{ user }}</span>!</div>
+    <a href="/forum" class="underline mr-4">Forum</a>
+    <a href="/chat" class="underline mr-4">Chat</a>
+    <a href="/logout" class="underline text-red-400">Logout</a>
+    {% endif %}
+</div>
+{% endblock %} 
