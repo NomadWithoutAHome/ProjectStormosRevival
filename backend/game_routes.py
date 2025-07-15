@@ -42,4 +42,8 @@ def game_login_hack(params: str, db: Session = Depends(get_db)):
         fake_id = random.randint(100000, 999999)
         return PlainTextResponse(str(fake_id))
     else:
-        return PlainTextResponse('wrong username or password') 
+        return PlainTextResponse('wrong username or password')
+
+@router.get('/game/orders')
+def game_orders(uin: str = Query(...)):
+    return PlainTextResponse('completed') 
